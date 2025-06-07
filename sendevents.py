@@ -1,48 +1,47 @@
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from azure.eventhub.aio import EventHubProducerClient
-from azure.eventhub import EventData
-import json
+import uvicorn
+from azure.eventhub import EventHubProducerClient, EventData
 import os
+import json
 from dotenv import load_dotenv
 
+
+# Load environment variables from .env
 load_dotenv()
 
 app = FastAPI()
 
-# CORS middleware config
+# Set your Azure Event Hub connection here
+EVENT_HUB_CONN_STR = os.getenv("EVENT_HUB_CONN_STR")  # Use Railway Secret
+EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")          # Use Railway Secret
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],  # <-- explicitly allow your frontend origin
-    allow_credentials=True,
-    allow_methods=["*"],   # allow POST, GET, OPTIONS, etc
-    allow_headers=["*"],   # allow all headers
+
+producer = EventHubProducerClient.from_connection_string(
+    conn_str=EVENT_HUB_CONN_STR,
+    eventhub_name=EVENT_HUB_NAME
 )
 
+@app.post("/send-events")
+async def send_events(request: Request):
+    try:
+        payload = await request.json()
+        print("✅ Received payload:", payload)
 
-EVENT_HUB_CONN_STR = os.getenv("EVENT_HUB_CONN_STR")
-EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")
+        # Send to Azure Event Hub
+        event_data_batch = producer.create_batch()
+        event_data_batch.add(EventData(json.dumps(payload)))
+        producer.send_batch(event_data_batch)
 
-@app.get("/")
-def read_root():
-    return {"message": "FastAPI is running!"}
+        print("🚀 Sent to Azure Event Hub")
+        return {"status": "success"}
 
-@app.post("/send-data")
-async def send_data(request: Request):
-    event_data = await request.json()
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return {"status": "error", "message": str(e)}
 
-    producer = EventHubProducerClient.from_connection_string(
-        conn_str=EVENT_HUB_CONN_STR,
-        eventhub_name=EVENT_HUB_NAME
-    )
+# For local testing
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
-    async with producer:
-        event_batch = await producer.create_batch()
-        event_batch.add(EventData(json.dumps(event_data)))
-        await producer.send_batch(event_batch)
-
-    print("✅ Sent to Event Hub:", json.dumps(event_data))
-    return {"message": "Event sent successfully"}
 
         

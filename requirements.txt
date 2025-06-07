@@ -2,3 +2,5 @@
 fastapi
 uvicorn
 azure-eventhub
+python-dotenv
+

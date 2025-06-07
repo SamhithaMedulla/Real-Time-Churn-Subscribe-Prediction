@@ -4,6 +4,7 @@ from azure.eventhub import EventHubProducerClient, EventData
 import os
 import json
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # Load environment variables from .env
@@ -11,9 +12,20 @@ load_dotenv()
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins → can restrict later if needed
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Set your Azure Event Hub connection here
 EVENT_HUB_CONN_STR = os.getenv("EVENT_HUB_CONN_STR")  # Use Railway Secret
 EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")          # Use Railway Secret
+
+print("EVENT_HUB_CONN_STR:", repr(EVENT_HUB_CONN_STR))
+print("EVENT_HUB_NAME:", repr(EVENT_HUB_NAME))
 
 
 producer = EventHubProducerClient.from_connection_string(
@@ -42,6 +54,3 @@ async def send_events(request: Request):
 # For local testing
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
-
-        

@@ -24,10 +24,6 @@ app.add_middleware(
 EVENT_HUB_CONN_STR = os.getenv("EVENT_HUB_CONN_STR")  # Use Railway Secret
 EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")          # Use Railway Secret
 
-print("EVENT_HUB_CONN_STR:", repr(EVENT_HUB_CONN_STR))
-print("EVENT_HUB_NAME:", repr(EVENT_HUB_NAME))
-
-
 producer = EventHubProducerClient.from_connection_string(
     conn_str=EVENT_HUB_CONN_STR,
     eventhub_name=EVENT_HUB_NAME

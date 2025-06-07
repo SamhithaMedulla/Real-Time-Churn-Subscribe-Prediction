@@ -5,6 +5,14 @@ import uvicorn
 from azure.eventhub import EventHubProducerClient, EventData
 import os
 import json
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+
+# Test read
+test_var = os.getenv("TEST_ENV_VAR")
+print("🚩 TEST_ENV_VAR:", test_var)
 
 app = FastAPI()
 

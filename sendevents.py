@@ -33,7 +33,7 @@ producer = EventHubProducerClient.from_connection_string(
     eventhub_name=EVENT_HUB_NAME
 )
 
-@app.post("/send-events")
+@app.post("/send-data")
 async def send_events(request: Request):
     try:
         payload = await request.json()

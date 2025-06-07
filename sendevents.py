@@ -1,5 +1,3 @@
-# send_events_api.py
-
 from fastapi import FastAPI, Request
 import uvicorn
 from azure.eventhub import EventHubProducerClient, EventData
@@ -7,18 +5,16 @@ import os
 import json
 from dotenv import load_dotenv
 
+
 # Load environment variables from .env
 load_dotenv()
-
-# Test read
-test_var = os.getenv("TEST_ENV_VAR")
-print("🚩 TEST_ENV_VAR:", test_var)
 
 app = FastAPI()
 
 # Set your Azure Event Hub connection here
 EVENT_HUB_CONN_STR = os.getenv("EVENT_HUB_CONN_STR")  # Use Railway Secret
 EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")          # Use Railway Secret
+
 
 producer = EventHubProducerClient.from_connection_string(
     conn_str=EVENT_HUB_CONN_STR,
